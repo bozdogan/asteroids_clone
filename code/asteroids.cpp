@@ -37,6 +37,8 @@ struct game_object
 {
     polygon Shape;
     v2 Pos;
+    v2 Vel;
+    v2 Acc;
     float Angle;
 };
 
@@ -105,7 +107,10 @@ Initialize(game_object *Player)
         {  0,   0},
         { 10,  10}
     };
-    Player->Pos = {100, 100};
+    Player->Pos = {(float)(Game.ScreenWidth/2),
+                   (float)(Game.ScreenHeight/2)};
+    Player->Vel = {0, 0};
+    Player->Acc = {0, 0};
     Player->Angle = 0;
 }
 
@@ -139,24 +144,66 @@ Update(game_object *Player)
     // if(Game.Input.Right) ++Player->Pos.x;
     // if(Game.Input.Left)  --Player->Pos.x;
 
-    v2 Dir = Direction(*Player);
-    printf("Direction: (%f, %f) Angle: %f\n", Dir.x, Dir.y, Player->Angle);
+    v2 PlayerDirection = Direction(*Player);
+    printf("Player Direction: (%.2f, %.2f)  \tAngle: %.4f\tVel: (%.2f, %.2f)\tAcc: (%.2f, %.2f)\n",
+           PlayerDirection.x, PlayerDirection.y, Player->Angle,
+           Player->Vel.x, Player->Vel.y,
+           Player->Acc.x, Player->Acc.y);
     if(Game.Input.Up)
     {
-        Player->Pos.x += Dir.x;
-        Player->Pos.y += Dir.y;
+        Player->Acc.x += (0.01)*PlayerDirection.x;
+        Player->Acc.y += (0.01)*PlayerDirection.y;
     }
+
     if(Game.Input.Down)
     {
-        Player->Pos.x -= Dir.x;
-        Player->Pos.y -= Dir.y;
+        Player->Acc.x -= (0.01)*PlayerDirection.x;
+        Player->Acc.y -= (0.01)*PlayerDirection.y;
     }
+    
+    if(!(Game.Input.Up || Game.Input.Down))
+    {
+        Player->Acc.x = 0;
+        Player->Acc.y = 0;
+    }
+
     if(Game.Input.Right)
     {
         Player->Angle += .02f;
     }
+
     if(Game.Input.Left)
     {
         Player->Angle -= .02f;
+    }
+
+
+    // NOTE(bora): Acceleration decay
+    if(Length(Player->Acc) > 0.1)
+    {
+        Player->Acc.x = Player->Acc.x/2; 
+        Player->Acc.y = Player->Acc.y/2; 
+    }
+
+    Player->Vel = Player->Vel + Player->Acc;
+    Player->Pos = Player->Pos + Player->Vel;
+
+    // NOTE(bora): Wrap around
+    if(Player->Pos.y < 0)
+    {
+        Player->Pos.y = Game.ScreenHeight + Player->Pos.y;
+    }
+    if(Player->Pos.y > Game.ScreenHeight)
+    {
+        Player->Pos.y = Player->Pos.y - Game.ScreenHeight;
+    }
+
+    if(Player->Pos.x < 0)
+    {
+        Player->Pos.x = Game.ScreenWidth + Player->Pos.x;
+    }
+    if(Player->Pos.x > Game.ScreenWidth)
+    {
+        Player->Pos.x = Player->Pos.x - Game.ScreenWidth;
     }
 }

@@ -21,10 +21,12 @@ typedef uint64_t uint64;
 
 struct input_state
 {
-    bool Up;
-    bool Right;
-    bool Down;
-    bool Left;
+    bool32 Up;
+    bool32 Right;
+    bool32 Down;
+    bool32 Left;
+
+    bool32 Reset;
 };
 
 struct game_info
@@ -84,6 +86,10 @@ HandleEvents()
                     Game.Input.Left = IsDown ? 1 : 0;
                     break;
 
+                case SDL_SCANCODE_R:
+                    Game.Input.Reset = IsDown ? 1 : 0;
+                    break;
+
                 case SDL_SCANCODE_ESCAPE:
                     Game.Running = false;
                     break;
@@ -105,8 +111,8 @@ UpdateFPSOnTitle(game_info *Game)
 
 int main(int argc, char** argv)
 {
-    Game.ScreenWidth = 640;
-    Game.ScreenHeight = 480;
+    Game.ScreenWidth = 800;
+    Game.ScreenHeight = 600;
     Game.Title = "Asteroids!";
 
     if(SDL_Init(SDL_INIT_VIDEO))
@@ -141,22 +147,25 @@ int main(int argc, char** argv)
         if( Game.Input.Up != PrevInput.Up 
             && Game.Input.Up)
         {
-            printf("Up\n");
         }
         if( Game.Input.Right != PrevInput.Right
             && Game.Input.Right)
         {
-            printf("Right\n");
         }
         if( Game.Input.Down != PrevInput.Down
             && Game.Input.Down)
         {
-            printf("Down\n");
         }
         if( Game.Input.Left != PrevInput.Left
             && Game.Input.Left)
         {
-            printf("Left\n");
+        }
+
+        if( Game.Input.Reset != PrevInput.Reset
+            && Game.Input.Reset)
+        {
+            printf("\n\n   === RESET ===\n\n");
+            Initialize(&Player);
         }
 
         Update(&Player);
