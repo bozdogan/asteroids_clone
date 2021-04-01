@@ -1,9 +1,5 @@
 #include <stdint.h>
 
-#define internal static
-#define global_variable static
-#define local_persist static
-
 typedef int8_t int8;
 typedef int16_t int16;
 typedef int32_t int32;
@@ -15,37 +11,18 @@ typedef uint16_t uint16;
 typedef uint32_t uint32;
 typedef uint64_t uint64;
 
+#define internal static
+#define global_variable static
+#define local_persist static
+
 #define SDL_MAIN_HANDLED
 #include "SDL.h"
+#include "asteroids.h"
+global_variable game_info Game;
+#include "asteroids.cpp"
+
 #include <stdio.h>
 
-struct input_state
-{
-    bool32 Up;
-    bool32 Right;
-    bool32 Down;
-    bool32 Left;
-
-    bool32 Reset;
-};
-
-struct game_info
-{
-    int32 ScreenWidth;
-    int32 ScreenHeight;
-    char *Title;
-    bool32 Running;
-
-    SDL_Window *Window;
-    SDL_Renderer *Renderer;
-
-    input_state Input;
-    float DeltaTime;
-};
-
-global_variable game_info Game;
-
-#include "asteroids.cpp"
 
 internal void
 HandleEvents()
@@ -111,8 +88,12 @@ UpdateFPSOnTitle(game_info *Game)
 
 int main(int argc, char** argv)
 {
-    Game.ScreenWidth = 800;
-    Game.ScreenHeight = 600;
+    int32 ScaleFactor = 2;
+
+    Game.FrameWidth = 400;
+    Game.FrameHeight = 300;
+    Game.WindowWidth = Game.FrameWidth*ScaleFactor;
+    Game.WindowHeight = Game.FrameHeight*ScaleFactor;
     Game.Title = "Asteroids!";
 
     if(SDL_Init(SDL_INIT_VIDEO))
@@ -122,7 +103,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    if(SDL_CreateWindowAndRenderer(Game.ScreenWidth, Game.ScreenHeight,
+    if(SDL_CreateWindowAndRenderer(Game.WindowWidth, Game.WindowHeight,
                                    0, &Game.Window, &Game.Renderer))
     {
         printf("Bir yanlışlık oldu.");
@@ -131,6 +112,10 @@ int main(int argc, char** argv)
     }
 
     SDL_SetWindowTitle(Game.Window, Game.Title);
+    Game.Frame = SDL_CreateTexture(Game.Renderer,
+                                   SDL_PIXELFORMAT_RGBA32,
+                                   SDL_TEXTUREACCESS_TARGET,
+                                   Game.FrameWidth, Game.FrameHeight);
 
     SDL_RenderClear(Game.Renderer);
     SDL_RenderPresent(Game.Renderer);
@@ -168,10 +153,13 @@ int main(int argc, char** argv)
             Initialize(&Player);
         }
 
+        SDL_SetRenderTarget(Game.Renderer, Game.Frame);
         Update(&Player);
+        SDL_SetRenderTarget(Game.Renderer, 0);
+        SDL_RenderCopy(Game.Renderer, Game.Frame, 0, 0);
         SDL_RenderPresent(Game.Renderer);
         
-        SDL_Delay(10);
+        SDL_Delay(16);
 
         PrevInput = Game.Input;
         HandleEvents();
