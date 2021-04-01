@@ -76,14 +76,14 @@ HandleEvents()
 }
 
 internal void
-UpdateFPSOnTitle(game_info *Game)
+UpdateFPSOnTitle()
 {
-    double FrameRate = 1.0/Game->DeltaTime;
+    double FrameRate = 1.0/Game.DeltaTime;
 
     char NewTitle[36];
     snprintf(NewTitle, 36, "%s - FPS: %.1f",
-        Game->Title, FrameRate);
-    SDL_SetWindowTitle(Game->Window, NewTitle);
+        Game.Title, FrameRate);
+    SDL_SetWindowTitle(Game.Window, NewTitle);
 }
 
 int main(int argc, char** argv)
@@ -160,13 +160,14 @@ int main(int argc, char** argv)
         SDL_RenderPresent(Game.Renderer);
         
         SDL_Delay(16);
+        printf("%f\n", Game.DeltaTime);
 
         PrevInput = Game.Input;
         HandleEvents();
 
         uint64 ClockNow = SDL_GetPerformanceCounter();
         Game.DeltaTime = (float)(ClockNow - ClockPrev)/SDL_GetPerformanceFrequency();
-        UpdateFPSOnTitle(&Game);
+        UpdateFPSOnTitle();
         ClockPrev = ClockNow;
     }
 

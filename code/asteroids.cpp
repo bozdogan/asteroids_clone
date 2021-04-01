@@ -71,20 +71,17 @@ Update(game_object *Ship)
     //        Ship->Acc.x, Ship->Acc.y);
     if(Game.Input.Up)
     {
-        Ship->Acc.x += (0.01)*PlayerDirection.x;
-        Ship->Acc.y += (0.01)*PlayerDirection.y;
+        Ship->Acc += (0.01)*PlayerDirection;
     }
 
     if(Game.Input.Down)
     {
-        Ship->Acc.x -= (0.01)*PlayerDirection.x;
-        Ship->Acc.y -= (0.01)*PlayerDirection.y;
+        Ship->Acc -= (0.01)*PlayerDirection;
     }
     
     if(!(Game.Input.Up || Game.Input.Down))
     {
-        Ship->Acc.x = 0;
-        Ship->Acc.y = 0;
+        Ship->Acc = {0, 0};
     }
 
     if(Game.Input.Right)
@@ -97,16 +94,14 @@ Update(game_object *Ship)
         Ship->Angle -= .02f;
     }
 
-
     // NOTE(bora): Acceleration decay
     if(VectorLength(Ship->Acc) > 0.1)
     {
-        Ship->Acc.x = Ship->Acc.x/2; 
-        Ship->Acc.y = Ship->Acc.y/2; 
+        Ship->Acc = Ship->Acc*(1.0/2); 
     }
 
-    Ship->Vel = Ship->Vel + Ship->Acc;
-    Ship->Pos = Ship->Pos + Ship->Vel;
+    Ship->Vel += Ship->Acc;
+    Ship->Pos += Ship->Vel;
 
     // NOTE(bora): Wrap around
     if(Ship->Pos.y < 0)
