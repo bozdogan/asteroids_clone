@@ -64,19 +64,21 @@ Update(game_object *Ship)
     SetColor(180, 20, 50);
     SDL_RenderDrawPoint(Game.Renderer, Ship->Pos.x, Ship->Pos.y);
 
-    v2 PlayerDirection = Direction(*Ship);
-    // printf("Ship Direction: (%.2f, %.2f)  \tAngle: %.4f\tVel: (%.2f, %.2f)\tAcc: (%.2f, %.2f)\n",
-    //        PlayerDirection.x, PlayerDirection.y, Ship->Angle,
-    //        Ship->Vel.x, Ship->Vel.y,
-    //        Ship->Acc.x, Ship->Acc.y);
+    v2 ShipDirection = Direction(*Ship);
+    float Acceleration = 500;
+
+    printf("Ship Position: (%.2f, %.2f)    \tAngle: %.4f\tVel: (%.2f, %.2f)\tAcc: (%.2f, %.2f)\n",
+           Ship->Pos.x, Ship->Pos.y, Ship->Angle,
+           Ship->Vel.x, Ship->Vel.y,
+           Ship->Acc.x, Ship->Acc.y);
     if(Game.Input.Up)
     {
-        Ship->Acc += (0.01)*PlayerDirection;
+        Ship->Acc = Acceleration*ShipDirection;
     }
 
     if(Game.Input.Down)
     {
-        Ship->Acc -= (0.01)*PlayerDirection;
+        Ship->Acc = -Acceleration*ShipDirection;
     }
     
     if(!(Game.Input.Up || Game.Input.Down))
@@ -86,39 +88,40 @@ Update(game_object *Ship)
 
     if(Game.Input.Right)
     {
-        Ship->Angle += .02f;
+        Ship->Angle += 5*Game.DeltaTime;
     }
 
     if(Game.Input.Left)
     {
-        Ship->Angle -= .02f;
+        Ship->Angle -= 5*Game.DeltaTime;
     }
 
-    // NOTE(bora): Acceleration decay
-    if(VectorLength(Ship->Acc) > 0.1)
+    float SpeedLimit = 999999999;
+
+    Ship->Vel += Ship->Acc*Game.DeltaTime;
+    // NOTE(bora): Velocity cap
+    if(VectorLength(Ship->Vel) > SpeedLimit)
     {
-        Ship->Acc = Ship->Acc*(1.0/2); 
+        Ship->Vel = SpeedLimit*UnitVector(Ship->Vel);
     }
-
-    Ship->Vel += Ship->Acc;
-    Ship->Pos += Ship->Vel;
+    Ship->Pos += Ship->Vel*Game.DeltaTime;
 
     // NOTE(bora): Wrap around
     if(Ship->Pos.y < 0)
     {
-        Ship->Pos.y = Game.FrameHeight + Ship->Pos.y;
+        Ship->Pos.y = Game.FrameHeight + fmod(Ship->Pos.y, Game.FrameHeight);
     }
     if(Ship->Pos.y > Game.FrameHeight)
     {
-        Ship->Pos.y = Ship->Pos.y - Game.FrameHeight;
+        Ship->Pos.y = fmod(Ship->Pos.y, Game.FrameHeight);
     }
 
     if(Ship->Pos.x < 0)
     {
-        Ship->Pos.x = Game.FrameWidth + Ship->Pos.x;
+        Ship->Pos.x = Game.FrameWidth + fmod(Ship->Pos.x, Game.FrameWidth);
     }
     if(Ship->Pos.x > Game.FrameWidth)
     {
-        Ship->Pos.x = Ship->Pos.x - Game.FrameWidth;
+        Ship->Pos.x = fmod(Ship->Pos.x, Game.FrameWidth);
     }
 }

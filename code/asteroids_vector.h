@@ -51,8 +51,8 @@ inline v2
 operator*(v2 A, v2 B)
 {
     v2 Result;
-    Result.x = A.x * B.x;
-    Result.y = A.y * B.y;
+    Result.x = A.x*B.x;
+    Result.y = A.y*B.y;
     
     return Result;
 }
@@ -64,8 +64,8 @@ operator*(v2 A, float B)
     // NOTE(bora): Did you know? B can be infinity. How fun is that!
     if(isnormal(B))
     {
-        Result.x = A.x * B;
-        Result.y = A.y * B;
+        Result.x = A.x*B;
+        Result.y = A.y*B;
     }
     else
     {
@@ -78,7 +78,7 @@ operator*(v2 A, float B)
 inline v2
 operator*(float A, v2 B)
 {
-    return B * A;
+    return B*A;
 }
 
 inline float
@@ -93,6 +93,12 @@ VectorLength(v2 A)
     return sqrt(A.x*A.x + A.y*A.y);
 }
 
+
+inline v2
+UnitVector(v2 A)
+{
+    return A*(1/VectorLength(A));
+}
 
 inline v2
 VectorRotate(v2 A, float angle)

@@ -88,10 +88,10 @@ UpdateFPSOnTitle()
 
 int main(int argc, char** argv)
 {
-    int32 ScaleFactor = 2;
+    int32 ScaleFactor = 3;
 
-    Game.FrameWidth = 400;
-    Game.FrameHeight = 300;
+    Game.FrameWidth = 320;
+    Game.FrameHeight = 240;
     Game.WindowWidth = Game.FrameWidth*ScaleFactor;
     Game.WindowHeight = Game.FrameHeight*ScaleFactor;
     Game.Title = "Asteroids!";
@@ -122,8 +122,8 @@ int main(int argc, char** argv)
     input_state PrevInput = {0, 0, 0, 0};
 
     // NOTE(bora): Tanımlar
-    game_object Player;
-    Initialize(&Player);
+    game_object Ship;
+    Initialize(&Ship);
 
     Game.Running = true;
     uint64 ClockPrev = SDL_GetPerformanceCounter();
@@ -150,17 +150,16 @@ int main(int argc, char** argv)
             && Game.Input.Reset)
         {
             printf("\n\n   === RESET ===\n\n");
-            Initialize(&Player);
+            Initialize(&Ship);
         }
 
         SDL_SetRenderTarget(Game.Renderer, Game.Frame);
-        Update(&Player);
+        Update(&Ship);
         SDL_SetRenderTarget(Game.Renderer, 0);
         SDL_RenderCopy(Game.Renderer, Game.Frame, 0, 0);
         SDL_RenderPresent(Game.Renderer);
         
-        SDL_Delay(16);
-        printf("%f\n", Game.DeltaTime);
+        SDL_Delay(33);
 
         PrevInput = Game.Input;
         HandleEvents();
