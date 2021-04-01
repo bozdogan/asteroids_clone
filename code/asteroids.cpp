@@ -10,9 +10,8 @@ SetColor(uint8 r, uint8 g, uint8 b)
 inline void
 DrawLine(v2 StartPos, v2 EndPos)
 {
-    SDL_RenderDrawLineF(Game.Renderer, 
-                        StartPos.x, StartPos.y,
-                        EndPos.x, EndPos.y);
+    SDL_RenderDrawLine(Game.Renderer, (int32)StartPos.x, (int32)StartPos.y, 
+                                      (int32)EndPos.x,   (int32)EndPos.y);
 }
 
 internal void
@@ -66,6 +65,7 @@ Update(game_object *Ship)
 
     v2 ShipDirection = Direction(*Ship);
     float Acceleration = 500;
+    float RotationSpeed = 4;
 
     printf("Ship Position: (%.2f, %.2f)    \tAngle: %.4f\tVel: (%.2f, %.2f)\tAcc: (%.2f, %.2f)\n",
            Ship->Pos.x, Ship->Pos.y, Ship->Angle,
@@ -88,22 +88,36 @@ Update(game_object *Ship)
 
     if(Game.Input.Right)
     {
-        Ship->Angle += 5*Game.DeltaTime;
+        Ship->Angle += RotationSpeed*Game.DeltaTime;
     }
 
     if(Game.Input.Left)
     {
-        Ship->Angle -= 5*Game.DeltaTime;
+        Ship->Angle -= RotationSpeed*Game.DeltaTime;
     }
 
-    float SpeedLimit = 999999999;
+    float SpeedLimit = 200;
+    float Friction = 0.1*SpeedLimit;
+    float SpeedEpsilon = 1;  // pixels per second
+
+    if(VectorLength(Ship->Vel) > 0)
+    {
+        Ship->Acc -= Friction*UnitVector(Ship->Vel);
+    }
 
     Ship->Vel += Ship->Acc*Game.DeltaTime;
+
+    if(VectorLength(Ship->Vel) < SpeedEpsilon)
+    {
+        Ship->Vel = {0, 0};
+    }
+
     // NOTE(bora): Velocity cap
     if(VectorLength(Ship->Vel) > SpeedLimit)
     {
         Ship->Vel = SpeedLimit*UnitVector(Ship->Vel);
     }
+
     Ship->Pos += Ship->Vel*Game.DeltaTime;
 
     // NOTE(bora): Wrap around

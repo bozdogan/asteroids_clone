@@ -88,10 +88,10 @@ UpdateFPSOnTitle()
 
 int main(int argc, char** argv)
 {
-    int32 ScaleFactor = 3;
+    int32 ScaleFactor = 2;
 
-    Game.FrameWidth = 320;
-    Game.FrameHeight = 240;
+    Game.FrameWidth = 640;
+    Game.FrameHeight = 480;
     Game.WindowWidth = Game.FrameWidth*ScaleFactor;
     Game.WindowHeight = Game.FrameHeight*ScaleFactor;
     Game.Title = "Asteroids!";
@@ -159,7 +159,7 @@ int main(int argc, char** argv)
         SDL_RenderCopy(Game.Renderer, Game.Frame, 0, 0);
         SDL_RenderPresent(Game.Renderer);
         
-        SDL_Delay(33);
+        SDL_Delay(16);
 
         PrevInput = Game.Input;
         HandleEvents();

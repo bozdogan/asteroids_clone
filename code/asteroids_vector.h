@@ -75,6 +75,13 @@ operator*(v2 A, float B)
     return Result;
 }
 
+inline v2 &
+operator*=(v2 &B, float A)
+{
+    B = B*A;
+    return B;
+}
+
 inline v2
 operator*(float A, v2 B)
 {
