@@ -5,6 +5,8 @@
 // NOTE(bora): polygon'da kullandım.
 #include <vector>
 
+#define PI32 (3.14159274f)
+
 struct input_state
 {
     bool32 Up;
@@ -42,6 +44,7 @@ struct polygon
 
 struct game_object
 {
+    int32 Size;
     polygon Shape;
     v2 Pos;
     v2 Vel;
@@ -61,6 +64,13 @@ Direction(game_object A)
     SDL_assert(abs(Len - 1.0f) < 0.0000001);
 
     return Result;
+}
+
+inline int32
+RandomInt(int32 low, int32 high)
+{
+    // NOTE(bora): Both ends included
+    return (int32)(rand()%(high + 1 - low)) + low;
 }
 
 #define ASTEROIDS_H

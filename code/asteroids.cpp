@@ -26,24 +26,55 @@ DrawPolygon(polygon Poly, v2 ScreenPos)
     DrawLine(Poly.V[Poly.V.size() - 1] + ScreenPos, Poly.V[0] + ScreenPos);
 }
 
-internal void
-Initialize(game_object *Ship)
+internal game_object
+GenerateAsteroid(int32 Size)
 {
-    Ship->Shape.V = {
-        {  0, -15},
-        {-10,  10},
-        {  0,   0},
-        { 10,  10}
-    };
-    Ship->Pos = {(float)(Game.FrameWidth/2),
-                   (float)(Game.FrameHeight/2)};
-    Ship->Vel = {0, 0};
-    Ship->Acc = {0, 0};
-    Ship->Angle = 0;
+    if(Size < 1) Size = 1;
+
+    game_object Asteroid;
+    float r = Size*10;
+    Asteroid.Size = r;
+    Asteroid.Pos = {(float)RandomInt(0, Game.FrameWidth - 1),
+                    (float)RandomInt(0, Game.FrameHeight - 1)};
+    Asteroid.Vel = {0, 0};
+    Asteroid.Acc = {0, 0};
+
+    int32 Edges = RandomInt(8 , 12);
+    for(int i = 0; i < Edges; ++i)
+    {
+        float Theta = i*(2*PI32/Edges);
+        Asteroid.Shape.V.push_back({r*cosf(Theta) + RandomInt(3, 10),
+                                    r*sinf(Theta) + RandomInt(3, 10)});
+    }
+
+    return Asteroid;
 }
 
 internal void
-Update(game_object *Ship)
+Initialize(game_object *Ship, std::vector<game_object> &Asteroids)
+{
+    float r = 10;
+    Ship->Size = r;
+    Ship->Shape.V = {
+        { 0, -r},
+        {-r,  r},
+        { 0,  r/2},
+        { r,  r}
+    };
+    Ship->Pos = {(float)(Game.FrameWidth/2),
+                 (float)(Game.FrameHeight/2)};
+    Ship->Vel = {0, 0};
+    Ship->Acc = {0, 0};
+    Ship->Angle = 0;
+
+    for(int i = 0; i < 10; ++i)
+    {
+        Asteroids.push_back(GenerateAsteroid(RandomInt(1, 3)));
+    }
+}
+
+internal void
+Update(game_object *Ship, std::vector<game_object> Asteroids)
 {
     SetColor(0, 0, 0);
     SDL_RenderClear(Game.Renderer);
@@ -59,6 +90,11 @@ Update(game_object *Ship)
         DisplayShape.V.push_back(VectorRotate(Ship->Shape.V[Vertex], Ship->Angle));
     }
     DrawPolygon(DisplayShape, Ship->Pos);
+
+    for(int i = 0; i < Asteroids.size(); ++i)
+    {
+        DrawPolygon(Asteroids[i].Shape, Asteroids[i].Pos);
+    }
 
     SetColor(180, 20, 50);
     SDL_RenderDrawPoint(Game.Renderer, Ship->Pos.x, Ship->Pos.y);

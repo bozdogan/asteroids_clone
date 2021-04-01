@@ -123,7 +123,8 @@ int main(int argc, char** argv)
 
     // NOTE(bora): Tanımlar
     game_object Ship;
-    Initialize(&Ship);
+    std::vector<game_object> Asteroids;
+    Initialize(&Ship, Asteroids);
 
     Game.Running = true;
     uint64 ClockPrev = SDL_GetPerformanceCounter();
@@ -150,11 +151,11 @@ int main(int argc, char** argv)
             && Game.Input.Reset)
         {
             printf("\n\n   === RESET ===\n\n");
-            Initialize(&Ship);
+            Initialize(&Ship, Asteroids);
         }
 
         SDL_SetRenderTarget(Game.Renderer, Game.Frame);
-        Update(&Ship);
+        Update(&Ship, Asteroids);
         SDL_SetRenderTarget(Game.Renderer, 0);
         SDL_RenderCopy(Game.Renderer, Game.Frame, 0, 0);
         SDL_RenderPresent(Game.Renderer);
