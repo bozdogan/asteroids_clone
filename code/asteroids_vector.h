@@ -117,5 +117,25 @@ VectorRotate(v2 A, float angle)
     return Result;
 }
 
+
+union v4u
+{
+    struct
+    {
+        uint8 r, g, b, a;
+    };
+
+    struct
+    {
+        uint8 E[4];
+    };
+};
+
+inline v4u
+V4u(uint8 r, uint8 g, uint8 b, uint8 a=255)
+{
+    return v4u{r, g, b, a};
+}
+
 #define ASTEROIDS_VECTOR_H
 #endif

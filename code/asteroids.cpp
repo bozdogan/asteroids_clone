@@ -26,6 +26,22 @@ DrawPolygon(polygon Poly, v2 ScreenPos)
     DrawLine(Poly.V[Poly.V.size() - 1] + ScreenPos, Poly.V[0] + ScreenPos);
 }
 
+internal void
+DrawCircle(float Radius, v2 ScreenPos)
+{
+    // NOTE(bora): It's not a circle, it's a manygon!!1 
+
+    polygon Manygon; // Such poly.
+    int32 Edges = 23; // Many edges.
+    for(int i = 0; i < Edges; ++i)
+    {
+        float Theta = i*(2*PI32/Edges); // So math.
+        Manygon.V.push_back({Radius*cosf(Theta), Radius*sinf(Theta)});
+    }
+
+    DrawPolygon(Manygon, ScreenPos);
+}
+
 internal game_object
 GenerateAsteroid(int32 Size)
 {
@@ -46,37 +62,50 @@ GenerateAsteroid(int32 Size)
         Asteroid.Shape.V.push_back({r*cosf(Theta) + RandomInt(3, 10),
                                     r*sinf(Theta) + RandomInt(3, 10)});
     }
-
+        
     return Asteroid;
 }
 
+inline bool32
+Collide(game_object A, game_object B)
+{
+    v2 CenterA = Centroid(A.Shape) + A.Pos;
+    v2 CenterB = Centroid(B.Shape) + B.Pos;
+    return VectorLength(CenterA - CenterB) <= (A.Size + B.Size);
+}
+
 internal void
-Initialize(game_object *Ship, std::vector<game_object> &Asteroids)
+Initialize(stage *Level)
 {
     float r = 10;
-    Ship->Size = r;
-    Ship->Shape.V = {
+    Level->Ship.Size = r;
+    Level->Ship.Shape.V = {
         { 0, -r},
         {-r,  r},
         { 0,  r/2},
         { r,  r}
     };
-    Ship->Pos = {(float)(Game.FrameWidth/2),
-                 (float)(Game.FrameHeight/2)};
-    Ship->Vel = {0, 0};
-    Ship->Acc = {0, 0};
-    Ship->Angle = 0;
+    Level->Ship.Pos = {(float)(Game.FrameWidth/2),
+                             (float)(Game.FrameHeight/2)};
+    Level->Ship.Vel = {0, 0};
+    Level->Ship.Acc = {0, 0};
+    Level->Ship.Angle = 0;
 
+    Level->Asteroids.clear();
     for(int i = 0; i < 10; ++i)
     {
-        Asteroids.push_back(GenerateAsteroid(RandomInt(1, 3)));
+        Level->Asteroids.push_back(GenerateAsteroid(RandomInt(1, 3)));
     }
+
+    Level->BackColor = V4u(0, 0, 0);
 }
 
 internal void
-Update(game_object *Ship, std::vector<game_object> Asteroids)
+Update(stage *Level)
 {
-    SetColor(0, 0, 0);
+    SetColor(Level->BackColor.r,
+             Level->BackColor.g,
+             Level->BackColor.b);
     SDL_RenderClear(Game.Renderer);
 
     SetColor(255, 255, 255);
@@ -84,94 +113,134 @@ Update(game_object *Ship, std::vector<game_object> Asteroids)
     polygon DisplayShape;
     DisplayShape.V = {};
     for(int Vertex = 0;
-        Vertex < Ship->Shape.V.size();
+        Vertex < Level->Ship.Shape.V.size();
         ++Vertex)
     {
-        DisplayShape.V.push_back(VectorRotate(Ship->Shape.V[Vertex], Ship->Angle));
+        DisplayShape.V.push_back(VectorRotate(Level->Ship.Shape.V[Vertex], Level->Ship.Angle));
     }
-    DrawPolygon(DisplayShape, Ship->Pos);
+    DrawPolygon(DisplayShape, Level->Ship.Pos);
 
-    for(int i = 0; i < Asteroids.size(); ++i)
+    // NOTE(bora): Collision circle
+    SetColor(255, 42, 0);
+    DrawCircle(Level->Ship.Size,
+               Centroid(Level->Ship.Shape) + Level->Ship.Pos);
+
+    for(int i = 0; i < Level->Asteroids.size(); ++i)
     {
-        DrawPolygon(Asteroids[i].Shape, Asteroids[i].Pos);
+        SetColor(255, 255, 255);
+        DrawPolygon(Level->Asteroids[i].Shape, Level->Asteroids[i].Pos);
+
+        // NOTE(bora): Collision circle
+        SetColor(255, 42, 0);
+        DrawCircle(Level->Asteroids[i].Size,
+                   Centroid(Level->Asteroids[i].Shape) + Level->Asteroids[i].Pos);
     }
 
     SetColor(180, 20, 50);
-    SDL_RenderDrawPoint(Game.Renderer, Ship->Pos.x, Ship->Pos.y);
+    SDL_RenderDrawPoint(Game.Renderer, Level->Ship.Pos.x, Level->Ship.Pos.y);
 
-    v2 ShipDirection = Direction(*Ship);
+    // NOTE(bora):
+    //
+    //      === MOVEMENT CODE ===
+    v2 ShipDirection = Direction(Level->Ship);
     float Acceleration = 500;
     float RotationSpeed = 4;
 
-    printf("Ship Position: (%.2f, %.2f)    \tAngle: %.4f\tVel: (%.2f, %.2f)\tAcc: (%.2f, %.2f)\n",
-           Ship->Pos.x, Ship->Pos.y, Ship->Angle,
-           Ship->Vel.x, Ship->Vel.y,
-           Ship->Acc.x, Ship->Acc.y);
+    // printf("Level->Ship Position: (%.2f, %.2f)    \tAngle: %.4f\tVel: (%.2f, %.2f)\tAcc: (%.2f, %.2f)\n",
+    //        Level->Ship.Pos.x, Level->Ship.Pos.y, Level->Ship.Angle,
+    //        Level->Ship.Vel.x, Level->Ship.Vel.y,
+    //        Level->Ship.Acc.x, Level->Ship.Acc.y);
+
     if(Game.Input.Up)
     {
-        Ship->Acc = Acceleration*ShipDirection;
+        Level->Ship.Acc = Acceleration*ShipDirection;
     }
-
     if(Game.Input.Down)
     {
-        Ship->Acc = -Acceleration*ShipDirection;
+        Level->Ship.Acc = -Acceleration*ShipDirection;
     }
-    
     if(!(Game.Input.Up || Game.Input.Down))
     {
-        Ship->Acc = {0, 0};
+        Level->Ship.Acc = {0, 0};
     }
 
     if(Game.Input.Right)
     {
-        Ship->Angle += RotationSpeed*Game.DeltaTime;
+        Level->Ship.Angle += RotationSpeed*Game.DeltaTime;
     }
 
     if(Game.Input.Left)
     {
-        Ship->Angle -= RotationSpeed*Game.DeltaTime;
+        Level->Ship.Angle -= RotationSpeed*Game.DeltaTime;
     }
 
     float SpeedLimit = 200;
     float Friction = 0.1*SpeedLimit;
     float SpeedEpsilon = 1;  // pixels per second
 
-    if(VectorLength(Ship->Vel) > 0)
+    if(VectorLength(Level->Ship.Vel) > 0)
     {
-        Ship->Acc -= Friction*UnitVector(Ship->Vel);
+        Level->Ship.Acc -= Friction*UnitVector(Level->Ship.Vel);
     }
 
-    Ship->Vel += Ship->Acc*Game.DeltaTime;
+    Level->Ship.Vel += Level->Ship.Acc*Game.DeltaTime;
 
-    if(VectorLength(Ship->Vel) < SpeedEpsilon)
+    if(VectorLength(Level->Ship.Vel) < SpeedEpsilon)
     {
-        Ship->Vel = {0, 0};
+        Level->Ship.Vel = {0, 0};
     }
 
     // NOTE(bora): Velocity cap
-    if(VectorLength(Ship->Vel) > SpeedLimit)
+    if(VectorLength(Level->Ship.Vel) > SpeedLimit)
     {
-        Ship->Vel = SpeedLimit*UnitVector(Ship->Vel);
+        Level->Ship.Vel = SpeedLimit*UnitVector(Level->Ship.Vel);
     }
 
-    Ship->Pos += Ship->Vel*Game.DeltaTime;
+    Level->Ship.Pos += Level->Ship.Vel*Game.DeltaTime;
 
     // NOTE(bora): Wrap around
-    if(Ship->Pos.y < 0)
+    if(Level->Ship.Pos.y < 0)
     {
-        Ship->Pos.y = Game.FrameHeight + fmod(Ship->Pos.y, Game.FrameHeight);
+        Level->Ship.Pos.y = Game.FrameHeight + fmod(Level->Ship.Pos.y, Game.FrameHeight);
     }
-    if(Ship->Pos.y > Game.FrameHeight)
+    if(Level->Ship.Pos.y > Game.FrameHeight)
     {
-        Ship->Pos.y = fmod(Ship->Pos.y, Game.FrameHeight);
+        Level->Ship.Pos.y = fmod(Level->Ship.Pos.y, Game.FrameHeight);
     }
 
-    if(Ship->Pos.x < 0)
+    if(Level->Ship.Pos.x < 0)
     {
-        Ship->Pos.x = Game.FrameWidth + fmod(Ship->Pos.x, Game.FrameWidth);
+        Level->Ship.Pos.x = Game.FrameWidth + fmod(Level->Ship.Pos.x, Game.FrameWidth);
     }
-    if(Ship->Pos.x > Game.FrameWidth)
+    if(Level->Ship.Pos.x > Game.FrameWidth)
     {
-        Ship->Pos.x = fmod(Ship->Pos.x, Game.FrameWidth);
+        Level->Ship.Pos.x = fmod(Level->Ship.Pos.x, Game.FrameWidth);
+    }
+
+    // NOTE(bora):
+    //
+    //     === COLLISION CODE ===
+    int32 NumCollisions = 0;
+    for(int i = 0; i < Level->Asteroids.size(); ++i)
+    {
+        if(Collide(Level->Ship, Level->Asteroids[i]))
+        {
+            ++NumCollisions;
+            printf("PARKOUR!");
+        }
+    }
+
+    // TODO(bora): Shoot projectile
+    if(Game.Input.Action)
+    {
+        Level->BackColor = V4u(0, 120, 0);
+    }
+    else if(NumCollisions)
+    {
+        Level->BackColor = V4u(120, 0, 0);
+    }
+    else
+    {
+        Level->BackColor = V4u(0, 0, 0);
     }
 }

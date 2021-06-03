@@ -63,6 +63,10 @@ HandleEvents()
                     Game.Input.Left = IsDown ? 1 : 0;
                     break;
 
+                case SDL_SCANCODE_SPACE:
+                    Game.Input.Action = IsDown ? 1 : 0;
+                    break;
+
                 case SDL_SCANCODE_R:
                     Game.Input.Reset = IsDown ? 1 : 0;
                     break;
@@ -122,9 +126,8 @@ int main(int argc, char** argv)
     input_state PrevInput = {0, 0, 0, 0};
 
     // NOTE(bora): Tanımlar
-    game_object Ship;
-    std::vector<game_object> Asteroids;
-    Initialize(&Ship, Asteroids);
+    stage ActiveLevel;
+    Initialize(&ActiveLevel);
 
     Game.Running = true;
     uint64 ClockPrev = SDL_GetPerformanceCounter();
@@ -151,11 +154,11 @@ int main(int argc, char** argv)
             && Game.Input.Reset)
         {
             printf("\n\n   === RESET ===\n\n");
-            Initialize(&Ship, Asteroids);
+            Initialize(&ActiveLevel);
         }
 
         SDL_SetRenderTarget(Game.Renderer, Game.Frame);
-        Update(&Ship, Asteroids);
+        Update(&ActiveLevel);
         SDL_SetRenderTarget(Game.Renderer, 0);
         SDL_RenderCopy(Game.Renderer, Game.Frame, 0, 0);
         SDL_RenderPresent(Game.Renderer);

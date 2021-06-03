@@ -13,6 +13,7 @@ struct input_state
     bool32 Right;
     bool32 Down;
     bool32 Left;
+    bool32 Action;
 
     bool32 Reset;
 };
@@ -52,6 +53,14 @@ struct game_object
     float Angle;
 };
 
+struct stage
+{
+    game_object Ship;
+    std::vector<game_object> Asteroids;
+
+    v4u BackColor;
+};
+
 
 inline v2
 Direction(game_object A)
@@ -71,6 +80,51 @@ RandomInt(int32 low, int32 high)
 {
     // NOTE(bora): Both ends included
     return (int32)(rand()%(high + 1 - low)) + low;
+}
+
+internal float
+SignedArea(polygon Shape)
+{
+    float Result = 0;
+
+    int Next = 1;
+    for (int Point = 0; Point < Shape.V.size(); ++Point)
+    {
+        Result += Shape.V[Point].x * Shape.V[Next].y - Shape.V[Next].x * Shape.V[Point].y;
+        Next = (Next + 1)%Shape.V.size();
+    }
+
+    return Result/2;
+}
+
+internal v2
+Centroid(polygon Shape)
+{
+    float Area = SignedArea(Shape);
+
+    float Cx = 0;
+    float Cy = 0;
+
+    int Next = 1;
+    for (int Point = 0; Point < Shape.V.size(); ++Point)
+    {
+        float t = Shape.V[Point].x*Shape.V[Next].y - Shape.V[Next].x*Shape.V[Point].y;
+        
+        Cx += (Shape.V[Point].x+Shape.V[Next].x) * t;
+        Cy += (Shape.V[Point].y+Shape.V[Next].y) * t;
+        Next = (Next + 1) % Shape.V.size();
+    }
+
+    Cx = Cx / (6.0 * Area);
+    Cy = Cy / (6.0 * Area);
+
+    return v2{Cx, Cy};
+}
+
+inline v2
+Centroid(game_object A)
+{
+    return Centroid(A.Shape) + A.Pos;
 }
 
 #define ASTEROIDS_H
