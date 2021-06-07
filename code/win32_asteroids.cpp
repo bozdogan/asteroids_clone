@@ -15,13 +15,13 @@ typedef uint64_t uint64;
 #define global_variable static
 #define local_persist static
 
+
 #define SDL_MAIN_HANDLED
 #include "SDL.h"
 #include "asteroids.h"
 global_variable game_info Game;
 #include "asteroids.cpp"
 
-#include <stdio.h>
 
 
 internal void
