@@ -7,6 +7,8 @@
 
 #define PI32 (3.14159274f)
 
+#define INPUT_NOREPEAT(key) (Game.Input.##key != Game.PrevInput.##key && Game.Input.##key)
+
 struct input_state
 {
     bool32 Up;
@@ -32,6 +34,7 @@ struct game_info
     SDL_Renderer *Renderer;
     SDL_Texture *Frame;
 
+    input_state PrevInput;
     input_state Input;
     float DeltaTime;
 };

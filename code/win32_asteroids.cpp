@@ -123,7 +123,7 @@ int main(int argc, char** argv)
 
     SDL_RenderClear(Game.Renderer);
     SDL_RenderPresent(Game.Renderer);
-    input_state PrevInput = {0, 0, 0, 0};
+    Game.PrevInput = {0, 0, 0, 0};
 
     // NOTE(bora): Tanımlar
     stage ActiveLevel;
@@ -133,25 +133,7 @@ int main(int argc, char** argv)
     uint64 ClockPrev = SDL_GetPerformanceCounter();
     while(Game.Running)
     {
-        if( Game.Input.Up != PrevInput.Up 
-            && Game.Input.Up)
-        {
-        }
-        if( Game.Input.Right != PrevInput.Right
-            && Game.Input.Right)
-        {
-        }
-        if( Game.Input.Down != PrevInput.Down
-            && Game.Input.Down)
-        {
-        }
-        if( Game.Input.Left != PrevInput.Left
-            && Game.Input.Left)
-        {
-        }
-
-        if( Game.Input.Reset != PrevInput.Reset
-            && Game.Input.Reset)
+        if(INPUT_NOREPEAT(Reset))
         {
             printf("\n\n   === RESET ===\n\n");
             Initialize(&ActiveLevel);
@@ -165,7 +147,7 @@ int main(int argc, char** argv)
         
         SDL_Delay(16);
 
-        PrevInput = Game.Input;
+        Game.PrevInput = Game.Input;
         HandleEvents();
 
         uint64 ClockNow = SDL_GetPerformanceCounter();

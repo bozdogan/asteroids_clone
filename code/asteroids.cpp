@@ -15,7 +15,7 @@ GenerateAsteroid(int32 Size)
                     (float)RandomInt(0, Game.FrameHeight - 1)};
     Asteroid.Vel = {0, 0};
     Asteroid.Acc = {0, 0};
-    Asteroid.Color = V4u(rand()%255, rand()%255, rand()%255);
+    Asteroid.Color = V4u(255, 255, 255);
 
     int32 Edges = RandomInt(8 , 12);
     for(int i = 0; i < Edges; ++i)
@@ -120,6 +120,7 @@ Update(stage *Level)
     //      === MOVEMENT CODE ===
 
     MoveShip(Level);
+    MoveProjectiles(Level);
 
     // NOTE(bora):
     //
@@ -136,12 +137,12 @@ Update(stage *Level)
     }
 
     // TODO(bora): Shoot projectile
-    if(Game.Input.Action)
+    if(INPUT_NOREPEAT(Action))
     {
-
-        Level->BackColor = V4u(0, 120, 0);
+        Level->Projectiles.push_back(CreateProjectile(Level->Ship, 10));
     }
-    else if(NumCollisions)
+    
+    if(NumCollisions)
     {
         Level->BackColor = V4u(120, 0, 0);
     }

@@ -81,5 +81,47 @@ MoveShip(stage *Level)
     }
 }
 
+internal void
+MoveProjectiles(stage *Level)
+{
+    float DistanceCap = VectorLength({(float)Game.FrameWidth,
+                                      (float)Game.FrameHeight});
+
+    for(int i = 0;
+        i < Level->Projectiles.size();)
+    {
+        if(Level->Projectiles[i].DistanceTravelled >= DistanceCap)
+        {
+            Level->Projectiles.erase(Level->Projectiles.begin() + i);
+        }
+        else
+        {
+            Level->Projectiles[i].Pos += Level->Projectiles[i].Vel;
+            Level->Projectiles[i].DistanceTravelled += VectorLength(Level->Projectiles[i].Vel);
+            
+            // NOTE(bora): Wrap around
+            if(Level->Projectiles[i].Pos.y < 0)
+            {
+                Level->Projectiles[i].Pos.y = Game.FrameHeight + fmod(Level->Projectiles[i].Pos.y, Game.FrameHeight);
+            }
+            if(Level->Projectiles[i].Pos.y > Game.FrameHeight)
+            {
+                Level->Projectiles[i].Pos.y = fmod(Level->Projectiles[i].Pos.y, Game.FrameHeight);
+            }
+
+            if(Level->Projectiles[i].Pos.x < 0)
+            {
+                Level->Projectiles[i].Pos.x = Game.FrameWidth + fmod(Level->Projectiles[i].Pos.x, Game.FrameWidth);
+            }
+            if(Level->Projectiles[i].Pos.x > Game.FrameWidth)
+            {
+                Level->Projectiles[i].Pos.x = fmod(Level->Projectiles[i].Pos.x, Game.FrameWidth);
+            }
+
+            ++i;
+        }
+    }
+}
+
 #define ASTEROIDS_MOVE_H
 #endif
