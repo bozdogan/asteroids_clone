@@ -132,7 +132,7 @@ union v4u
 };
 
 inline v4u
-V4u(uint8 r, uint8 g, uint8 b, uint8 a=255)
+V4u(uint8 r, uint8 g, uint8 b, uint8 a=0xFF)
 {
     return v4u{r, g, b, a};
 }

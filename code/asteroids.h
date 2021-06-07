@@ -51,12 +51,23 @@ struct game_object
     v2 Vel;
     v2 Acc;
     float Angle;
+
+    v4u Color;
+};
+
+struct projectile
+{
+    v2 Pos;
+    v2 Vel;
+    bool32 Friendly;
+    float DistanceTravelled;
 };
 
 struct stage
 {
     game_object Ship;
     std::vector<game_object> Asteroids;
+    std::vector<projectile> Projectiles;
 
     v4u BackColor;
 };
@@ -125,6 +136,21 @@ inline v2
 Centroid(game_object A)
 {
     return Centroid(A.Shape) + A.Pos;
+}
+
+inline bool32
+Collide(game_object A, game_object B)
+{
+    v2 CenterA = Centroid(A.Shape) + A.Pos;
+    v2 CenterB = Centroid(B.Shape) + B.Pos;
+    return VectorLength(CenterA - CenterB) <= (A.Size + B.Size);
+}
+
+inline bool32
+Collide(game_object A, projectile B)
+{
+    v2 CenterA = Centroid(A.Shape) + A.Pos;
+    return VectorLength(CenterA - B.Pos) <= A.Size;
 }
 
 #define ASTEROIDS_H

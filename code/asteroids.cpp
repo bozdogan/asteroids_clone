@@ -2,9 +2,16 @@
 #include "asteroids.h"
 
 inline void
-SetColor(uint8 r, uint8 g, uint8 b)
+SetColor(v4u Color)
 {
-    SDL_SetRenderDrawColor(Game.Renderer, r, g, b, 0xFF);
+    SDL_SetRenderDrawColor(Game.Renderer,
+                           Color.r, Color.g, Color.b, Color.a);
+}
+
+inline void
+DrawPoint(v2 Pos)
+{
+    SDL_RenderDrawPoint(Game.Renderer, (int32)Pos.x, (int32)Pos.y);
 }
 
 inline void
@@ -54,6 +61,7 @@ GenerateAsteroid(int32 Size)
                     (float)RandomInt(0, Game.FrameHeight - 1)};
     Asteroid.Vel = {0, 0};
     Asteroid.Acc = {0, 0};
+    Asteroid.Color = V4u(rand()%255, rand()%255, rand()%255);
 
     int32 Edges = RandomInt(8 , 12);
     for(int i = 0; i < Edges; ++i)
@@ -66,12 +74,17 @@ GenerateAsteroid(int32 Size)
     return Asteroid;
 }
 
-inline bool32
-Collide(game_object A, game_object B)
+inline projectile
+CreateProjectile(game_object Shooter, float Speed, bool Friendly=true)
 {
-    v2 CenterA = Centroid(A.Shape) + A.Pos;
-    v2 CenterB = Centroid(B.Shape) + B.Pos;
-    return VectorLength(CenterA - CenterB) <= (A.Size + B.Size);
+    projectile Projectile;
+    
+    Projectile.Pos = Shooter.Pos;
+    Projectile.Vel = Speed*Direction(Shooter);
+    Projectile.Friendly = Friendly;
+    Projectile.DistanceTravelled = 0;
+
+    return Projectile;
 }
 
 internal void
@@ -97,18 +110,18 @@ Initialize(stage *Level)
         Level->Asteroids.push_back(GenerateAsteroid(RandomInt(1, 3)));
     }
 
+    Level->Projectiles.clear();
+
     Level->BackColor = V4u(0, 0, 0);
 }
 
 internal void
 Update(stage *Level)
 {
-    SetColor(Level->BackColor.r,
-             Level->BackColor.g,
-             Level->BackColor.b);
+    SetColor(Level->BackColor);
     SDL_RenderClear(Game.Renderer);
 
-    SetColor(255, 255, 255);
+    SetColor(V4u(255, 255, 255));
 
     polygon DisplayShape;
     DisplayShape.V = {};
@@ -120,28 +133,35 @@ Update(stage *Level)
     }
     DrawPolygon(DisplayShape, Level->Ship.Pos);
 
-    // NOTE(bora): Collision circle
-    SetColor(255, 42, 0);
-    DrawCircle(Level->Ship.Size,
-               Centroid(Level->Ship.Shape) + Level->Ship.Pos);
+    // // NOTE(bora): Collision circle
+    // SetColor(V4u(255, 42, 0));
+    // DrawCircle(Level->Ship.Size,
+    //            Centroid(Level->Ship.Shape) + Level->Ship.Pos);
 
     for(int i = 0; i < Level->Asteroids.size(); ++i)
     {
-        SetColor(255, 255, 255);
+        SetColor(Level->Asteroids[i].Color);
         DrawPolygon(Level->Asteroids[i].Shape, Level->Asteroids[i].Pos);
 
-        // NOTE(bora): Collision circle
-        SetColor(255, 42, 0);
-        DrawCircle(Level->Asteroids[i].Size,
-                   Centroid(Level->Asteroids[i].Shape) + Level->Asteroids[i].Pos);
+        // // NOTE(bora): Collision circle
+        // SetColor(V4u(255, 42, 0));
+        // DrawCircle(Level->Asteroids[i].Size,
+        //            Centroid(Level->Asteroids[i].Shape) + Level->Asteroids[i].Pos);
     }
 
-    SetColor(180, 20, 50);
-    SDL_RenderDrawPoint(Game.Renderer, Level->Ship.Pos.x, Level->Ship.Pos.y);
+    SetColor(V4u(255, 255, 255));
+    for(int i = 0; i < Level->Projectiles.size(); ++i)
+    {
+        DrawPoint(Level->Projectiles[i].Pos);
+    }
+
+    SetColor(V4u(180, 20, 50));
+    DrawPoint(Level->Ship.Pos);
 
     // NOTE(bora):
     //
     //      === MOVEMENT CODE ===
+
     v2 ShipDirection = Direction(Level->Ship);
     float Acceleration = 500;
     float RotationSpeed = 4;
@@ -220,6 +240,7 @@ Update(stage *Level)
     // NOTE(bora):
     //
     //     === COLLISION CODE ===
+
     int32 NumCollisions = 0;
     for(int i = 0; i < Level->Asteroids.size(); ++i)
     {
