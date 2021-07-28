@@ -142,6 +142,16 @@ Update(stage *Level)
             ++NumCollisions;
             printf("PARKOUR!");
         }
+
+        for(int j = 0;
+            j < Level->Projectiles.size();
+            ++j)
+        {
+            if(Collide(Level->Asteroids[i], Level->Projectiles[j]))
+            {
+                Level->Asteroids.erase(Level->Asteroids.begin() + i);
+            }
+        }
     }
 
     // TODO(bora): Shoot projectile

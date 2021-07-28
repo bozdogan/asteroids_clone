@@ -9,7 +9,7 @@
 
 #define INPUT_NOREPEAT(key) (Game.Input.##key != Game.PrevInput.##key && Game.Input.##key)
 
-#define VISUALDEBUG 0
+#define VISUALDEBUG 1
 
 
 struct input_state
