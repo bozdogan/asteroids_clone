@@ -7,7 +7,7 @@ MoveShip(stage *Level)
     float Acceleration = 500;
     float RotationSpeed = 4;
 
-#if DEBUG
+#if DEBUG && 0
     printf("Level->Ship Position: (%.2f, %.2f)    \tAngle: %.4f\tVel: (%.2f, %.2f)\tAcc: (%.2f, %.2f)\n",
            Level->Ship.Pos.x, Level->Ship.Pos.y, Level->Ship.Angle,
            Level->Ship.Vel.x, Level->Ship.Vel.y,
@@ -119,6 +119,36 @@ MoveProjectiles(stage *Level)
             }
 
             ++i;
+        }
+    }
+}
+
+internal void
+MoveAsteroids(stage *Level)
+{
+    for(int i = 0;
+        i < Level->Asteroids.size();
+        ++i)
+    {
+        Level->Asteroids[i].Pos += Level->Asteroids[i].Vel;
+
+        // NOTE(bora): Wrap around
+        if(Level->Asteroids[i].Pos.y < 0)
+        {
+            Level->Asteroids[i].Pos.y = Game.FrameHeight + fmod(Level->Asteroids[i].Pos.y, Game.FrameHeight);
+        }
+        if(Level->Asteroids[i].Pos.y > Game.FrameHeight)
+        {
+            Level->Asteroids[i].Pos.y = fmod(Level->Asteroids[i].Pos.y, Game.FrameHeight);
+        }
+
+        if(Level->Asteroids[i].Pos.x < 0)
+        {
+            Level->Asteroids[i].Pos.x = Game.FrameWidth + fmod(Level->Asteroids[i].Pos.x, Game.FrameWidth);
+        }
+        if(Level->Asteroids[i].Pos.x > Game.FrameWidth)
+        {
+            Level->Asteroids[i].Pos.x = fmod(Level->Asteroids[i].Pos.x, Game.FrameWidth);
         }
     }
 }

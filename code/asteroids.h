@@ -9,6 +9,9 @@
 
 #define INPUT_NOREPEAT(key) (Game.Input.##key != Game.PrevInput.##key && Game.Input.##key)
 
+#define VISUALDEBUG 0
+
+
 struct input_state
 {
     bool32 Up;
@@ -94,6 +97,14 @@ RandomInt(int32 low, int32 high)
 {
     // NOTE(bora): Both ends included
     return (int32)(rand()%(high + 1 - low)) + low;
+}
+
+inline float
+RandomFloat(float low, float high)
+{
+    printf("hEY %d\n", RAND_MAX);
+
+    return ((float)rand()/(float)RAND_MAX)*(high - low) + low;
 }
 
 internal float

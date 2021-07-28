@@ -13,7 +13,14 @@ GenerateAsteroid(int32 Size)
     Asteroid.Size = r;
     Asteroid.Pos = {(float)RandomInt(0, Game.FrameWidth - 1),
                     (float)RandomInt(0, Game.FrameHeight - 1)};
-    Asteroid.Vel = {0, 0};
+    {
+        float Theta = RandomFloat(0, 2*PI32);
+        SDL_assert(Theta <= 2*PI32);
+
+        float Velocity = RandomFloat(1, 10);
+        Asteroid.Vel = {Velocity*cosf(Theta),
+                        Velocity*sinf(Theta)};
+    }
     Asteroid.Acc = {0, 0};
     Asteroid.Color = V4u(255, 255, 255);
 
@@ -87,7 +94,7 @@ Update(stage *Level)
     }
     DrawPolygon(DisplayShape, Level->Ship.Pos);
 
-#if DEBUG
+#if VISUALDEBUG
     // NOTE(bora): Collision circle
     SetColor(V4u(255, 42, 0));
     DrawCircle(Level->Ship.Size,
@@ -98,7 +105,7 @@ Update(stage *Level)
         SetColor(Level->Asteroids[i].Color);
         DrawPolygon(Level->Asteroids[i].Shape, Level->Asteroids[i].Pos);
 
-#if DEBUG
+#if VISUALDEBUG
         // NOTE(bora): Collision circle
         SetColor(V4u(255, 42, 0));
         DrawCircle(Level->Asteroids[i].Size,
@@ -120,6 +127,7 @@ Update(stage *Level)
     //      === MOVEMENT CODE ===
 
     MoveShip(Level);
+    MoveAsteroids(Level);
     MoveProjectiles(Level);
 
     // NOTE(bora):
