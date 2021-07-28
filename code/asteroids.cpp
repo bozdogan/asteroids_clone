@@ -17,7 +17,7 @@ GenerateAsteroid(int32 Size)
         float Theta = RandomFloat(0, 2*PI32);
         SDL_assert(Theta <= 2*PI32);
 
-        float Velocity = RandomFloat(1, 10);
+        float Velocity = RandomFloat(10, 50);
         Asteroid.Vel = {Velocity*cosf(Theta),
                         Velocity*sinf(Theta)};
     }
@@ -147,7 +147,7 @@ Update(stage *Level)
     // TODO(bora): Shoot projectile
     if(INPUT_NOREPEAT(Action))
     {
-        Level->Projectiles.push_back(CreateProjectile(Level->Ship, 10));
+        Level->Projectiles.push_back(CreateProjectile(Level->Ship, 500));
     }
     
     if(NumCollisions)

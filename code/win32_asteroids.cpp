@@ -23,7 +23,6 @@ global_variable game_info Game;
 #include "asteroids.cpp"
 
 
-
 internal void
 HandleEvents()
 {
@@ -145,7 +144,7 @@ int main(int argc, char** argv)
         SDL_RenderCopy(Game.Renderer, Game.Frame, 0, 0);
         SDL_RenderPresent(Game.Renderer);
         
-        SDL_Delay(16);
+        SDL_Delay(33);
 
         Game.PrevInput = Game.Input;
         HandleEvents();

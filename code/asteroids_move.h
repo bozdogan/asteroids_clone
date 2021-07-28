@@ -96,8 +96,9 @@ MoveProjectiles(stage *Level)
         }
         else
         {
-            Level->Projectiles[i].Pos += Level->Projectiles[i].Vel;
-            Level->Projectiles[i].DistanceTravelled += VectorLength(Level->Projectiles[i].Vel);
+            v2 VelocityPerFrame = Level->Projectiles[i].Vel*Game.DeltaTime;
+            Level->Projectiles[i].Pos += VelocityPerFrame;
+            Level->Projectiles[i].DistanceTravelled += VectorLength(VelocityPerFrame);
             
             // NOTE(bora): Wrap around
             if(Level->Projectiles[i].Pos.y < 0)
@@ -130,7 +131,7 @@ MoveAsteroids(stage *Level)
         i < Level->Asteroids.size();
         ++i)
     {
-        Level->Asteroids[i].Pos += Level->Asteroids[i].Vel;
+        Level->Asteroids[i].Pos += Level->Asteroids[i].Vel*Game.DeltaTime;
 
         // NOTE(bora): Wrap around
         if(Level->Asteroids[i].Pos.y < 0)
