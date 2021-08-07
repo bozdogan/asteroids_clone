@@ -9,7 +9,7 @@
 
 #define INPUT_NOREPEAT(key) (Game.Input.##key != Game.PrevInput.##key && Game.Input.##key)
 
-#define VISUALDEBUG 1
+#define VISUALDEBUG 0
 
 
 struct input_state
@@ -76,6 +76,8 @@ struct stage
     std::vector<projectile> Projectiles;
 
     v4u BackColor;
+    float BulletSpeed;
+    float DistanceCap;
 };
 
 
@@ -102,8 +104,6 @@ RandomInt(int32 low, int32 high)
 inline float
 RandomFloat(float low, float high)
 {
-    printf("hEY %d\n", RAND_MAX);
-
     return ((float)rand()/(float)RAND_MAX)*(high - low) + low;
 }
 

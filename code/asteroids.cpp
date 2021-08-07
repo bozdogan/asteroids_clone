@@ -1,7 +1,7 @@
 
 #include "asteroids.h"
 #include "asteroids_draw.h"
-#include "asteroids_move.h"
+#include "asteroids_update.h"
 
 internal game_object
 GenerateAsteroid(int32 Size)
@@ -18,6 +18,7 @@ GenerateAsteroid(int32 Size)
         SDL_assert(Theta <= 2*PI32);
 
         float Velocity = RandomFloat(10, 50);
+        printf("%f\n", Velocity);
         Asteroid.Vel = {Velocity*cosf(Theta),
                         Velocity*sinf(Theta)};
     }
@@ -74,6 +75,9 @@ Initialize(stage *Level)
     Level->Projectiles.clear();
 
     Level->BackColor = V4u(0, 0, 0);
+    Level->BulletSpeed = 400;
+    Level->DistanceCap = VectorLength({(float)Game.FrameWidth,
+                                       (float)Game.FrameHeight})/2.0f;
 }
 
 internal void
@@ -149,7 +153,26 @@ Update(stage *Level)
         {
             if(Collide(Level->Asteroids[i], Level->Projectiles[j]))
             {
+                // NOTE(bora): Splitting an asteroid
+                //     Asteroid size is in pixels. It is assumed that size of
+                //     an asteroid is either 10, 20 or 30px. Because it is how
+                //     I designed the code initially and it is most likely that
+                //     the game design will change in the future so I'm basically
+                //     writing a long comment to remind myself why this matters.
+                Level->Projectiles.erase(Level->Projectiles.begin() + j);
+
+                // TODO(bora): I'm extracting the "tier" of an asteroid from its `Size`
+                // property. Asteroids are "game_objects" now but if that changes in the
+                // future this process may not be necessary.
+                int32 AsteroidSize = Level->Asteroids[i].Size/10;
+                
                 Level->Asteroids.erase(Level->Asteroids.begin() + i);
+                if(AsteroidSize > 1)
+                {
+                    // IMPORTANT TODO(bora): THIS IS WRONG!!
+                    Level->Asteroids.push_back(GenerateAsteroid(AsteroidSize - 1));
+                    Level->Asteroids.push_back(GenerateAsteroid(AsteroidSize - 1));
+                }
             }
         }
     }
@@ -157,7 +180,7 @@ Update(stage *Level)
     // TODO(bora): Shoot projectile
     if(INPUT_NOREPEAT(Action))
     {
-        Level->Projectiles.push_back(CreateProjectile(Level->Ship, 500));
+        Level->Projectiles.push_back(CreateProjectile(Level->Ship, Level->BulletSpeed));
     }
     
     if(NumCollisions)
