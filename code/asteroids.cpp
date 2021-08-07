@@ -123,9 +123,12 @@ Update(stage *Level)
                 v2 CollisionPos = Level->Asteroids[i].Pos;
                 v2 CollisionVel = Level->Asteroids[i].Vel;
 
-                v2 NewSize = OldSize - 1;
-                v2 NewVel1 = VectorRotate(CollisionVel, DegreesOf(90));
-                v2 NewVel2 = VectorRotate(CollisionVel, DegreesOf(-90));
+                int32 NewSize = OldSize - 1;
+                float frac_Old_New = (float)OldSize/(float)NewSize;
+                // NOTE(bora): It felt too fast but I still wanted proportional
+                // velocity so I tuned it down a bit.
+                v2 NewVel2 = 0.8*frac_Old_New*VectorRotate(CollisionVel, DegreesOf(-90));
+                v2 NewVel1 = 0.8*frac_Old_New*VectorRotate(CollisionVel, DegreesOf(+90));
                 
                 Level->Asteroids.erase(Level->Asteroids.begin() + i);
                 if(OldSize > 1)
