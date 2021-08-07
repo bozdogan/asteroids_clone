@@ -3,52 +3,6 @@
 #include "asteroids_draw.h"
 #include "asteroids_update.h"
 
-internal game_object
-GenerateAsteroid(int32 Size)
-{
-    if(Size < 1) Size = 1;
-
-    game_object Asteroid;
-    float r = Size*10;
-    Asteroid.Size = r;
-    Asteroid.Pos = {(float)RandomInt(0, Game.FrameWidth - 1),
-                    (float)RandomInt(0, Game.FrameHeight - 1)};
-    {
-        float Theta = RandomFloat(0, 2*PI32);
-        SDL_assert(Theta <= 2*PI32);
-
-        float Velocity = RandomFloat(10, 50);
-        printf("%f\n", Velocity);
-        Asteroid.Vel = {Velocity*cosf(Theta),
-                        Velocity*sinf(Theta)};
-    }
-    Asteroid.Acc = {0, 0};
-    Asteroid.Color = V4u(255, 255, 255);
-
-    int32 Edges = RandomInt(8 , 12);
-    for(int i = 0; i < Edges; ++i)
-    {
-        float Theta = i*(2*PI32/Edges);
-        Asteroid.Shape.V.push_back({r*cosf(Theta) + RandomInt(3, 10),
-                                    r*sinf(Theta) + RandomInt(3, 10)});
-    }
-        
-    return Asteroid;
-}
-
-inline projectile
-CreateProjectile(game_object Shooter, float Speed, bool Friendly=true)
-{
-    projectile Projectile;
-    
-    Projectile.Pos = Shooter.Pos;
-    Projectile.Vel = Speed*Direction(Shooter);
-    Projectile.Friendly = Friendly;
-    Projectile.DistanceTravelled = 0;
-
-    return Projectile;
-}
-
 internal void
 Initialize(stage *Level)
 {
@@ -69,7 +23,7 @@ Initialize(stage *Level)
     Level->Asteroids.clear();
     for(int i = 0; i < 10; ++i)
     {
-        Level->Asteroids.push_back(GenerateAsteroid(RandomInt(1, 3)));
+        Level->Asteroids.push_back(CreateRandomAsteroid(RandomInt(1, 3)));
     }
 
     Level->Projectiles.clear();
@@ -159,19 +113,27 @@ Update(stage *Level)
                 //     I designed the code initially and it is most likely that
                 //     the game design will change in the future so I'm basically
                 //     writing a long comment to remind myself why this matters.
+                
                 Level->Projectiles.erase(Level->Projectiles.begin() + j);
 
                 // TODO(bora): I'm extracting the "tier" of an asteroid from its `Size`
                 // property. Asteroids are "game_objects" now but if that changes in the
                 // future this process may not be necessary.
-                int32 AsteroidSize = Level->Asteroids[i].Size/10;
+                int32 OldSize = Level->Asteroids[i].Size/10;
+                v2 CollisionPos = Level->Asteroids[i].Pos;
+                v2 CollisionVel = Level->Asteroids[i].Vel;
+
+                v2 NewSize = OldSize - 1;
+                v2 NewVel1 = VectorRotate(CollisionVel, DegreesOf(90));
+                v2 NewVel2 = VectorRotate(CollisionVel, DegreesOf(-90));
                 
                 Level->Asteroids.erase(Level->Asteroids.begin() + i);
-                if(AsteroidSize > 1)
+                if(OldSize > 1)
                 {
-                    // IMPORTANT TODO(bora): THIS IS WRONG!!
-                    Level->Asteroids.push_back(GenerateAsteroid(AsteroidSize - 1));
-                    Level->Asteroids.push_back(GenerateAsteroid(AsteroidSize - 1));
+                    Level->Asteroids.push_back(
+                        CreateAsteroid(NewSize, CollisionPos, NewVel1));
+                    Level->Asteroids.push_back(
+                        CreateAsteroid(NewSize, CollisionPos, NewVel2));
                 }
             }
         }

@@ -81,6 +81,12 @@ struct stage
 };
 
 
+inline float
+DegreesOf(float radians)
+{
+    return 180.0f*(radians/PI32);
+}
+
 inline v2
 Direction(game_object A)
 {
