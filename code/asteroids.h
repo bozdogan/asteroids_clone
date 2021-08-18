@@ -6,8 +6,7 @@
 #include <vector>
 
 #define PI32 (3.14159274f)
-
-#define INPUT_NOREPEAT(key) (Game.Input.##key != Game.PrevInput.##key && Game.Input.##key)
+#define INPUT_NOREPEAT(key) (Game.Input.key != Game.PrevInput.key && Game.Input.key)
 
 #define VISUALDEBUG 0
 

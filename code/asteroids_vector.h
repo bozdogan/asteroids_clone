@@ -24,7 +24,7 @@ operator+(v2 A, v2 B)
 }
 
 inline v2 &
-operator+=(v2 &B, v2 &A)
+operator+=(v2 &B, v2 A)
 {
     B = B + A;
     return B;
@@ -41,7 +41,7 @@ operator-(v2 A, v2 B)
 }
 
 inline v2 &
-operator-=(v2 &B, v2 &A)
+operator-=(v2 &B, v2 A)
 {
     B = B - A;
     return B;
